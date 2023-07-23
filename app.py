@@ -96,25 +96,3 @@ def predictSong(songPredictionModel, song_name, artist_name):
     rawSongFeatures = getSongFeatures(TOKEN, songID)
     prediction = predictionModel(rawSongFeatures, songPredictionModel)
     return prediction
-
-#
-#
-#
-#
-#
-#
-#
-#
-
-# Streamlit ap design
-# title - SPOTIFY RECOMMENDATIONS
-# button - START PREDICTING
-# When we click this button - it will start a new form
-# Form details:
-# Enter song name: 
-# Enter artist name: 
-# Button - predict
-# When we click this button - it will show the result
-
-if st.button("PREDICT"):
-    predictionOutput = predictSong()
