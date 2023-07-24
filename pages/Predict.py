@@ -18,15 +18,20 @@ from script import predictSong
 # Creating a spark session
 spark = SparkSession.builder.master("local[2]").appName("Spotify_Recommendations").getOrCreate()
 
-# Loading the model
-songPredictionModel = LogisticRegressionModel.load("songPredictionModel")
-
 # Base page configs
 st.set_page_config(
     page_title="Spotify Recommendation",
     page_icon =":🎧",
     layout="wide"
 )
+
+@st.cache_resource()
+# Loading the model
+def loadModel():
+    songPredictionModel = LogisticRegressionModel.load("songPredictionModel")
+    return songPredictionModel
+
+songPredictionModel = loadModel()
 
 # Creating lottie function which will help in posting
 # stickers on the webpage for better looks.
