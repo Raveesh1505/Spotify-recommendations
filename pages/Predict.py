@@ -12,6 +12,7 @@ import streamlit as st
 from streamlit_lottie import st_lottie
 from pyspark.sql import SparkSession
 from pyspark.ml.classification import LogisticRegressionModel
+import streamlit.components.v1 as components
 from script import predictSong
 
 # Creating a spark session
@@ -62,11 +63,15 @@ artistName = st.text_input(
 
 # Predict button will show the result predicted by the model
 if st.button("Predict"):
-    songPrediction = predictSong(songPredictionModel, spark, songName, artistName)
-    if songPrediction:
+    songData = predictSong(songPredictionModel, spark, songName, artistName)
+    if songData:
+        songPrediction, songURI = songData
+        embedLink = f'https://open.spotify.com/embed/track/{songURI}'
         if songPrediction == "B":
-            st.error('Hmmm! Through our predictions it looks like will NOT ENJOY this song. However you may go ahead and give it a shot!')
+            st.error('Hmmm! Through our predictions it looks like will NOT ENJOY this song. However you may try it below!')
+            components.iframe(embedLink, height=300)
         else:
-            st.success('Through our predictions, it looks like you will ENJOY this song!!')
+            st.success('Through our predictions, it looks like you will ENJOY this song!! Enjoy listening to it below')
+            components.iframe(embedLink, height=300)
     else:
         st.error("That's strange! The song you entered is not available. Please try again with another song.")

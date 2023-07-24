@@ -55,7 +55,9 @@ def getTrack(token, song_name, artist_name):
     songDF   = pd.json_normalize(songData['tracks'], record_path='items')
     if len(songDF) > 0:
         ID = songDF['id'].iloc[0]
-        return ID
+        songURI = songDF['uri'].iloc[0]
+        songURI = songURI.split(':')[2]
+        return ID, songURI
     else:
         return False
 
@@ -87,14 +89,15 @@ def predictionModel(features, songPredictionModel):
 # Final method
 def predictSong(songPredictionModel, sparkSession, songName, artistName):
     TOKEN   = getToken()
-    songID  = getTrack(TOKEN, songName, artistName)
-    if songID:
+    songData  = getTrack(TOKEN, songName, artistName)
+    if songData:
+        songID, songURI = songData
         rawSongFeatures = getSongFeatures(TOKEN, sparkSession, songID)
         prediction = predictionModel(rawSongFeatures, songPredictionModel)
         if prediction == 1: 
             prediction = "A" 
         else:
             prediction = "B"
-        return prediction
+        return (prediction, songURI)
     else:
         return False
