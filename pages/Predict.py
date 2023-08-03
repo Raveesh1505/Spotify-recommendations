@@ -33,6 +33,8 @@ def loadModel():
 
 songPredictionModel = loadModel()
 
+st.title("Predict Song")
+
 # Creating lottie function which will help in posting
 # stickers on the webpage for better looks.
 def load_lottieurl(url):
@@ -77,6 +79,7 @@ if st.button("Predict"):
             components.iframe(embedLink, height=300)
         else:
             st.success('Through our predictions, it looks like you will ENJOY this song!! Enjoy listening to it below')
+            st.balloons()
             components.iframe(embedLink, height=300)
     else:
         st.error("That's strange! The song you entered is not available. Please try again with another song.")
