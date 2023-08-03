@@ -16,6 +16,11 @@ st.set_page_config(
     layout="wide"
 )
 
+st.write("Search and predict songs based on your taste!")
+st.title("Spotify Recommendation 🤔")
+st.subheader("Search and predict songs based on your taste!")
+leftColumn, rightColumn = st.columns(2)
+
 # Creating lottie function which will help in posting
 # stickers on the webpage for better looks.
 def load_lottieurl(url):
@@ -25,22 +30,29 @@ def load_lottieurl(url):
     return r.json()
 
 # Calling the sticker
-lottie_codings = load_lottieurl("https://lottie.host/6907dce6-3b9d-4197-a7fc-03c6c6a6b82a/IiOvEnY07N.json")
-
-# Header section  
-with st.container():
-   st.subheader("Listen songs only you like 🎶", )
-   st.title("Spotify Recommendation 🤔")
-   st.write("Recommendations based on liked🙂 and disliked🙃 songs")
+lottieBoy = load_lottieurl("https://lottie.host/6907dce6-3b9d-4197-a7fc-03c6c6a6b82a/IiOvEnY07N.json")
+lottiePredict = load_lottieurl("https://lottie.host/9adcaff5-47d2-46da-946d-777160241ca3/pnYOqlGbof.json")
+lottieSearch = load_lottieurl("https://lottie.host/9103b5c4-d70b-4679-a369-f995c2014b7b/1Ru8qyXAcv.json")
+lottieInfo = load_lottieurl("https://lottie.host/4ca73eb6-3090-4306-af4e-7d78578a7707/MfNe8fKb2G.json")
 
 # Differentiating the page into left and right containers
 # for easy and neater placement of elements  
-with st.container():
-    left_columns, right_columns = st.columns(2)
-        
-with right_columns:
-    st_lottie(lottie_codings, height=300)
- 
+
+with rightColumn:
+    st_lottie(lottieBoy, height=300)
+
+with leftColumn: 
+    col1, col2, col3 = st.columns(3)
 # Button to take the user to prediction page
-if st.button("Start Predicting"):
-    switch_page ("Predict")
+    with col1:
+        st_lottie(lottiePredict) 
+        if st.button("Start Predicting"):
+            switch_page("Predict")
+    with col2:
+        st_lottie(lottieSearch)
+        if st.button("Search Songs"):
+            switch_page("Search")
+    with col3:
+        st_lottie(lottieInfo)
+        if st.button("About the app"):
+            switch_page("Info")
