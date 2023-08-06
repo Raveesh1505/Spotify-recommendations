@@ -66,5 +66,5 @@ if st.button("Suggest!"):
                 components.iframe(emebedLink, height=300)
         else:
             st.error("Uhh ohh! Song not found!")
-    else:
+    else:   
         st.error("Uhh ohh! Artist not found!")

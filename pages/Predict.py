@@ -49,9 +49,9 @@ lottie_codings = load_lottieurl("https://lottie.host/82cb219c-5702-404f-9216-e10
 # Differentiating the page into left and right containers
 # for easy and neater placement of elements 
 with st.container():
-    left_columns, right_columns = st.columns(2)
+    upCotainer, downContainer = st.columns(2)
     
-with left_columns:
+with upCotainer:
     st_lottie(lottie_codings, height=300)
 
 # Taking user input for the song name

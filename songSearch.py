@@ -23,7 +23,7 @@ def getArtist(token, artistName):
     else:
         return False
 
-def songSuggestion(token, artistID, artistGenres, songID, limit, *args):
+def songSuggestion(token, artistID, artistGenres, songID, limit):
     """
     Song suggestion based on input
     """

@@ -43,7 +43,7 @@ with rightColumn:
 
 with leftColumn: 
     col1, col2, col3 = st.columns(3)
-# Button to take the user to prediction page
+    # Button to take the user to prediction page
     with col1:
         st_lottie(lottiePredict) 
         if st.button("Start Predicting"):
