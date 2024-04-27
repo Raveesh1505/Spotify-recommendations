@@ -10,13 +10,10 @@ the entered song.
 import requests
 import streamlit as st
 from streamlit_lottie import st_lottie
-from pyspark.sql import SparkSession
-from pyspark.ml.classification import LogisticRegressionModel
 import streamlit.components.v1 as components
+import joblib
 from script import predictSong
-
-# Creating a spark session
-spark = SparkSession.builder.master("local[2]").appName("Spotify_Recommendations").getOrCreate()
+from sklearn.preprocessing import StandardScaler
 
 # Base page configs
 st.set_page_config(
@@ -28,10 +25,13 @@ st.set_page_config(
 @st.cache_resource()
 # Loading the model
 def loadModel():
-    songPredictionModel = LogisticRegressionModel.load("songPredictionModel")
+    songPredictionModel = joblib.load("/Users/raveeshyadav/GitHub/Spotify-recommendations/songs_prediction_model.pkl")
     return songPredictionModel
 
 songPredictionModel = loadModel()
+
+# Creating a standard scalar
+standScalar = StandardScaler() 
 
 st.title("Predict Song")
 
@@ -70,7 +70,7 @@ artistName = st.text_input(
 
 # Predict button will show the result predicted by the model
 if st.button("Predict"):
-    songData = predictSong(songPredictionModel, spark, songName, artistName)
+    songData = predictSong(songPredictionModel, songName, artistName, standScalar)
     if songData:
         songPrediction, songURI = songData
         embedLink = f'https://open.spotify.com/embed/track/{songURI}'

@@ -4,12 +4,12 @@ in the web app in order to get the predictions
 """
 
 # Importing libraries
-from pyspark.ml.feature import VectorAssembler
 import os
 from dotenv import load_dotenv, find_dotenv
 import base64
 import requests
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 # Loading env variables
 load_dotenv(find_dotenv())
@@ -62,7 +62,7 @@ def getTrack(token, song_name, artist_name):
         return False
 
 # Method to get song features
-def getSongFeatures(token, sparkSession, songID):
+def getSongFeatures(token, songID):
     url = f'https://api.spotify.com/v1/audio-features?ids={songID}'
     songFeaturesHeaders = {
         "Authorization" : f"Bearer {token}"
@@ -73,29 +73,26 @@ def getSongFeatures(token, sparkSession, songID):
     )
     data    = featureResponse.json()
     dataDF  = pd.json_normalize(data['audio_features'])
-    dataDF  = dataDF.iloc[:, :11]
-    dataRaw = sparkSession.createDataFrame(dataDF)
-    return dataRaw
+    dataDF  = dataDF.drop(columns=['type', 'id', 'uri', 'track_href', 'analysis_url', 'duration_ms'])
+    return dataDF
 
 # Method to get prediction
-def predictionModel(features, songPredictionModel):
-    feature_names   = features.columns[:]
-    assembler       = VectorAssembler(inputCols=feature_names, outputCol="features")
-    testingData     = assembler.transform(features)
-    predictionDF    = songPredictionModel.transform(testingData)
-    prediction      = predictionDF.first()["prediction"]
+def predictionModel(data, songPredictionModel, standScalar):
+    data = data.drop(columns=['key', 'loudness', 'acousticness', 'instrumentalness', 'liveness', 'tempo'])
+    data = standScalar.fit_transform(data)
+    prediction = songPredictionModel.predict(data)
     return prediction
 
 # Final method
-def predictSong(songPredictionModel, sparkSession, songName, artistName):
+def predictSong(songPredictionModel, songName, artistName, standScalar):
     TOKEN   = getToken()
     songData  = getTrack(TOKEN, songName, artistName)
     if songData:
         songID, songURI = songData
-        rawSongFeatures = getSongFeatures(TOKEN, sparkSession, songID)
-        prediction = predictionModel(rawSongFeatures, songPredictionModel)
+        songFeaturesData = getSongFeatures(TOKEN, songID)
+        prediction = predictionModel(songFeaturesData, songPredictionModel, standScalar)
         if prediction == 1: 
-            prediction = "A" 
+            prediction = "A"
         else:
             prediction = "B"
         return (prediction, songURI)
