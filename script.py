@@ -9,14 +9,13 @@ from dotenv import load_dotenv, find_dotenv
 import base64
 import requests
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
 # Loading env variables
 load_dotenv(find_dotenv())
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
-# Method to get spotify token
+# Function to get spotify token
 def getToken():
     authString  = f"{CLIENT_ID}:{CLIENT_SECRET}"
     authBytes   = authString.encode("utf-8")
@@ -39,7 +38,7 @@ def getToken():
     TOKEN       = tokenData['access_token']
     return TOKEN
 
-# Method to get song ID
+# Function to get song ID
 def getTrack(token, song_name, artist_name):
     url         = "https://api.spotify.com/v1/search"
     query       = f"?q=track:{song_name}%20artist:{artist_name}&type=track&limit=1"
@@ -61,7 +60,7 @@ def getTrack(token, song_name, artist_name):
     else:
         return False
 
-# Method to get song features
+# Function to get song features
 def getSongFeatures(token, songID):
     url = f'https://api.spotify.com/v1/audio-features?ids={songID}'
     songFeaturesHeaders = {
@@ -73,28 +72,33 @@ def getSongFeatures(token, songID):
     )
     data    = featureResponse.json()
     dataDF  = pd.json_normalize(data['audio_features'])
-    dataDF  = dataDF.drop(columns=['type', 'id', 'uri', 'track_href', 'analysis_url', 'duration_ms'])
+    dataDF  = dataDF[['time_signature', 'danceability', 'energy', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'loudness', 'tempo', 'duration_ms']]
     return dataDF
 
-# Method to get prediction
-def predictionModel(data, songPredictionModel, standScalar):
-    data = data.drop(columns=['key', 'loudness', 'acousticness', 'instrumentalness', 'liveness', 'tempo'])
-    data = standScalar.fit_transform(data)
+# Function to get prediction
+def predictionModel(data, songPredictionModel):
     prediction = songPredictionModel.predict(data)
     return prediction
 
-# Final method
-def predictSong(songPredictionModel, songName, artistName, standScalar):
+# Final function to predict song cluster
+def predictSong(songPredictionModel, songName, artistName):
     TOKEN   = getToken()
     songData  = getTrack(TOKEN, songName, artistName)
     if songData:
         songID, songURI = songData
         songFeaturesData = getSongFeatures(TOKEN, songID)
-        prediction = predictionModel(songFeaturesData, songPredictionModel, standScalar)
-        if prediction == 1: 
-            prediction = "A"
-        else:
-            prediction = "B"
-        return (prediction, songURI)
+        prediction = predictionModel(songFeaturesData, songPredictionModel)
+        return prediction
     else:
-        return False
+        return None
+
+# Function to return related songs
+def getRelevantSongs(clusterNumber):
+    predictedData = pd.read_csv('/Users/raveeshyadav/GitHub/Spotify-recommendations/songs/predictionData.csv', index_col=0)
+    # Cleaning the data
+    listenNowURL = []
+    for row in range (0, len(predictedData)):
+        listenNowURL.append('https://open.spotify.com/track/{}'.format(predictedData['id'][row]))
+    predictedData['Listen Now'] = listenNowURL
+    predictedData = predictedData[predictedData['cluster'] == clusterNumber]
+    return predictedData.drop(columns=['id', 'cluster'])

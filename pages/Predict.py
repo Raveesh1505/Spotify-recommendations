@@ -12,7 +12,7 @@ import streamlit as st
 from streamlit_lottie import st_lottie
 import streamlit.components.v1 as components
 import joblib
-from script import predictSong
+from script import predictSong, getRelevantSongs
 from sklearn.preprocessing import StandardScaler
 
 # Base page configs
@@ -25,7 +25,7 @@ st.set_page_config(
 @st.cache_resource()
 # Loading the model
 def loadModel():
-    songPredictionModel = joblib.load("/Users/raveeshyadav/GitHub/Spotify-recommendations/songs_prediction_model.pkl")
+    songPredictionModel = joblib.load('/Users/raveeshyadav/GitHub/Spotify-recommendations/notebooks/predictionModel.pkl')
     return songPredictionModel
 
 songPredictionModel = loadModel()
@@ -70,16 +70,16 @@ artistName = st.text_input(
 
 # Predict button will show the result predicted by the model
 if st.button("Predict"):
-    songData = predictSong(songPredictionModel, songName, artistName, standScalar)
-    if songData:
-        songPrediction, songURI = songData
-        embedLink = f'https://open.spotify.com/embed/track/{songURI}'
-        if songPrediction == "B":
-            st.error('Hmmm! Through our predictions it looks like will NOT ENJOY this song. However you may try it below!')
-            components.iframe(embedLink, height=300)
-        else:
-            st.success('Through our predictions, it looks like you will ENJOY this song!! Enjoy listening to it below')
-            st.balloons()
-            components.iframe(embedLink, height=300)
+    clusterNumber = predictSong(songPredictionModel, songName, artistName)[0]
+    if clusterNumber != None:
+        suggestedSongs = getRelevantSongs(int(clusterNumber))
+        st.dataframe(
+            data=suggestedSongs,
+            column_config={
+                "Listen Now":st.column_config.LinkColumn(
+                    'Listen Now'
+                )
+            }
+        )
     else:
-        st.error("That's strange! The song you entered is not available. Please try again with another song.")
+        st.error('Song not found')
